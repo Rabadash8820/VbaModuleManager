@@ -28,10 +28,10 @@ Option Explicit
 
 Private mgr As New cModuleManager
 Private Sub Workbook_Open()
-    mgr.ShowImportMsgBox = True
-    mgr.ShowRemoveMsgBox = True
-    mgr.ReleaseMode = False
-    mgr.ModulesFolderPath = "WaveAnalyzeModules"
-    Set mgr.Workbook = ThisWorkbook
+    mgr.StartManaging _
+        FolderPath:="WaveAnalyzeModules", _
+        ShowImportMsgBox:=True, _
+        ShowRemoveMsgBox:=True, _
+        ReleaseMode:=False
 End Sub
 ```
