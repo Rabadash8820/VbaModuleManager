@@ -6,18 +6,28 @@ Private Const MY_NAME = "ModuleManager"
 
 Dim allComponents As VBComponents
 Dim fileSys As New FileSystemObject
+Dim alreadySaved As Boolean
 
-Public Sub importMacros()
+Public Sub ImportModules(ByVal fromDirectory As String, Optional ShowMsgBox As Boolean = True)
     'Cache some references
-    Dim thisFolder As Folder
+    'If the given directory does not exist then show an error dialog and exit
+    Dim path As String, dir As Folder
     Set allComponents = ThisWorkbook.VBProject.VBComponents
-    Set thisFolder = fileSys.GetFolder(ThisWorkbook.Path)
+    path = fromDirectory
+    If Not fileSys.FolderExists(path) Then
+        path = ThisWorkbook.path & "\" & path
+        If Not fileSys.FolderExists(path) Then
+            MsgBox "Could not locate import directory:  " & fromDirectory
+            Exit Sub
+        End If
+    End If
+    Set dir = fileSys.GetFolder(path)
                 
-    'Import all macros from this workbook's folder (if any)
+    'Import all VB code files from the given directory if any)
     Dim imports As New Dictionary
     Dim numFiles As Integer, f As File, dotIndex As String, ext As String, correctType As Boolean, allowedName As Boolean, replaced As Boolean
     numFiles = 0
-    For Each f In thisFolder.Files
+    For Each f In dir.Files
         dotIndex = InStrRev(f.Name, ".")
         ext = UCase(Right(f.Name, Len(f.Name) - dotIndex))
         correctType = (ext = "BAS" Or ext = "CLS" Or ext = "FRM")
@@ -29,34 +39,48 @@ Public Sub importMacros()
         End If
     Next f
     
-    'Show a success message box
-    Dim msg As String, result As VbMsgBoxResult, i As Integer
-    msg = numFiles & " modules successfully imported:" & vbCr & vbCr
-    For i = 0 To imports.Count - 1
-        msg = msg & "    " & imports.Keys()(i) & IIf(imports.Items()(i), " (replaced)", " (new)") & vbCr
-    Next i
-    result = MsgBox(msg, vbOKOnly)
+    'Show a success message box, if requested
+    If ShowMsgBox Then
+        Dim msg As String, result As VbMsgBoxResult, i As Integer
+        msg = numFiles & " modules imported:" & vbCr & vbCr
+        For i = 0 To imports.Count - 1
+            msg = msg & "    " & imports.Keys()(i) & IIf(imports.Items()(i), " (replaced)", " (new)") & vbCr
+        Next i
+        result = MsgBox(msg, vbOKOnly)
+    End If
 End Sub
-Public Sub exportMacros()
+Public Sub ExportModules(ByVal toDirectory As String)
     'Cache some references
-    Dim thisFolder As Folder
+    'If the given directory does not exist then show an error dialog and exit
+    Dim path As String, dir As Folder
     Set allComponents = ThisWorkbook.VBProject.VBComponents
-    Set thisFolder = fileSys.GetFolder(ThisWorkbook.Path)
+    path = toDirectory
+    If Not fileSys.FolderExists(path) Then
+        path = ThisWorkbook.path & "\" & path
+        If Not fileSys.FolderExists(path) Then _
+            fileSys.CreateFolder (path)
+    End If
+    Set dir = fileSys.GetFolder(path)
     
     'Export all modules from this workbook (except sheet/workbook modules)
     Dim vbc As VBComponent, correctType As Boolean
     For Each vbc In allComponents
         correctType = (vbc.Type = vbext_ct_StdModule Or vbc.Type = vbext_ct_ClassModule Or vbc.Type = vbext_ct_MSForm)
-        If correctType Then _
-            Call doExport(vbc)
+        If correctType And vbc.Name <> MY_NAME Then _
+            Call doExport(vbc, dir.path)
     Next vbc
 End Sub
-Public Sub removeMacros()
+Public Sub RemoveModules(Optional ShowMsgBox As Boolean = True)
+    'Check the saved flag to prevent a save event loop
+    If alreadySaved Then
+        alreadySaved = False
+        Exit Sub
+    End If
+        
     'Cache some references
-    Dim thisFolder As Folder
     Set allComponents = ThisWorkbook.VBProject.VBComponents
-    
-    'Remove all modules from this workbook (except sheet/workbook modules)
+                        
+    'Remove all modules from this workbook (except sheet/workbook modules obviously)
     Dim removals As New Collection
     Dim numModules As Integer, vbc As VBComponent, correctType As Boolean
     numModules = 0
@@ -69,22 +93,29 @@ Public Sub removeMacros()
         End If
     Next vbc
     
+    'Set the saved flag to prevent a save event loop
+        'Save workbook again now that all modules have been removed
+    alreadySaved = True
+    ThisWorkbook.Save
+        
     'Show a success message box
-    Dim msg As String, result As VbMsgBoxResult, item As Variant
-    msg = numModules & " modules successfully removed:" & vbCr & vbCr
-    For Each item In removals
-        msg = msg & "    " & item & vbCr
-    Next item
-    msg = msg & vbCr & "NEVER edit code in the .bas files and the VBE at the same time!" & vbCr
-    msg = msg & "Don't forget to remove any empty lines after the Attribute lines in .frm files..." & vbCr
-    msg = msg & "Note that changes made to ModuleManager outside the VBE will be overwritten and never imported."
-    result = MsgBox(msg, vbOKOnly)
+    If ShowMsgBox Then
+        Dim msg As String, result As VbMsgBoxResult, item As Variant
+        msg = numModules & " modules successfully removed:" & vbCr & vbCr
+        For Each item In removals
+            msg = msg & "    " & item & vbCr
+        Next item
+        msg = msg & vbCr & "Don't forget to remove any empty lines after the Attribute lines in .frm files..." _
+                  & vbCr & "ModuleManager will never be re-imported or exported.  You must do this manually if desired." _
+                  & vbCr & "NEVER edit code in the VBE and a separate editor at the same time!"
+        result = MsgBox(msg, vbOKOnly)
+    End If
 End Sub
 
-Private Function doImport(ByRef macroFile As File) As Boolean
+Private Function doImport(ByRef codeFile As File) As Boolean
     'Determine whether a module with this name already exists
     Dim Name As String, m As VBComponent
-    Name = Left(macroFile.Name, Len(macroFile.Name) - 4)
+    Name = Left(codeFile.Name, Len(codeFile.Name) - 4)
     On Error Resume Next
     Set m = allComponents.item(Name)
     If Err.Number <> 0 Then _
@@ -98,10 +129,10 @@ Private Function doImport(ByRef macroFile As File) As Boolean
         allComponents.Remove m
     
     'Then import the new module
-    allComponents.Import (macroFile.Path)
+    allComponents.Import (codeFile.path)
     doImport = alreadyExists
 End Function
-Private Function doExport(ByRef module As VBComponent) As Boolean
+Private Function doExport(ByRef module As VBComponent, ByVal dirPath As String) As Boolean
     'Determine whether a file with this component's name already exists
     Dim ext As String, filePath As String, alreadyExists As Boolean
     Select Case module.Type
@@ -112,7 +143,7 @@ Private Function doExport(ByRef module As VBComponent) As Boolean
         Case vbext_ct_StdModule
             ext = "bas"
     End Select
-    filePath = ThisWorkbook.Path & "\" & module.Name & "." & ext
+    filePath = dirPath & "\" & module.Name & "." & ext
     alreadyExists = fileSys.FileExists(filePath)
         
     'If so, remove it (even if its ReadOnly)
@@ -129,6 +160,3 @@ Private Function doExport(ByRef module As VBComponent) As Boolean
     module.Export (filePath)
     doExport = alreadyExists
 End Function
-
-
-
