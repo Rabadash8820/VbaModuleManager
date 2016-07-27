@@ -1,5 +1,5 @@
 # Module Manager
-The Module Manager handles automatic importing and exporting of Excel class, form, and VB modules.  Basically, the Manager imports all modules (*.bas, *.frm, *.frx, and *.cls files) stored in the same directory as your workbook when the workbook is opened, re-exports them every time it is saved, and removes them when the workbook is closed.  Excel version 2007 and later are supported (not tested on 2003 or earlier).
+The Module Manager handles automatic importing and exporting of Excel class, form, and VB modules.  Basically, the Manager imports all modules (*.bas, *.frm, *.frx, and *.cls files) stored in the same directory as your workbook when the workbook is opened, re-exports them every time it is saved, and removes them when the workbook is closed.
 
 ## Benefits
 * Storing code as text allows macros to be edited in the IDE of your choice, like Visual Studio or Notepad++.  All changes will be imported the next time you open the workbook!
@@ -8,7 +8,7 @@ The Module Manager handles automatic importing and exporting of Excel class, for
 * By removing modules when the workbook is closed, the Manager offers the above benefits *without* duplicating code between the text files and the workbook itself.
 
 ## Setup
-__******* SAVE AND CLOSE YOUR WORKBOOK BEFORE INITIATING SETUP TO AVOID LOSING WORK! *******__
+ModuleManager works with Excel 2007 and later (not tested on 2003 or earlier).
 
 1. __Import the ModuleManager module__ file into your workbook(s).  Within the VB Editor (VBE), in the Project Explorer view, right click anywhere under the name of your workbook and select "Import file...".  Select the ModuleManager.bas file that you just downloaded and click "Open".  (Note, normal module management does not apply to the ModuleManager itself, i.e. it will always be present in the workbook and will not be re-exported or removed).
 
@@ -26,12 +26,24 @@ __******* SAVE AND CLOSE YOUR WORKBOOK BEFORE INITIATING SETUP TO AVOID LOSING W
 ```
 Option Explicit
 
-Private mgr As New cModuleManager
+Dim alreadySaved As Boolean
+
 Private Sub Workbook_Open()
-    mgr.StartManaging _
-        FolderPath:="WaveAnalyzeModules", _
-        ShowImportMsgBox:=True, _
-        ShowRemoveMsgBox:=True, _
-        ReleaseMode:=False
+    Call importMacros
+End Sub
+Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, ByRef Cancel As Boolean)
+    Call exportMacros
+End Sub
+Private Sub Workbook_BeforeClose(ByRef Cancel As Boolean)
+    'Prevent a save event loop
+    If alreadySaved Then
+        alreadySaved = False
+        Exit Sub
+    End If
+    
+    'Remove all modules and save (so that modules are never saved with this workbook)
+    alreadySaved = True
+    Call removeMacros
+    ThisWorkbook.Save
 End Sub
 ```
