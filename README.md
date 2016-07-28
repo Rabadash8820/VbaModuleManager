@@ -8,9 +8,11 @@ The Module Manager handles automatic importing and exporting of Excel class, for
 * By removing modules when the workbook is closed, the Manager offers the above benefits *without* duplicating code between the text files and the workbook itself.
 
 ## Setup
-ModuleManager works with Excel 2007 and later (not tested in 2003 or earlier).
+ModuleManager works with Excel 2007 and later (not tested in 2003 or earlier).  The following screenshots show the setup for Excel 2016 on a Windows 10 machine.
 
-1. __Import the ModuleManager module__ file into your workbook(s).  Within the VB Editor (VBE), in the Project Explorer view, right click anywhere under the name of your workbook and select "Import file...".  Select the ModuleManager.bas file that you just downloaded and click "Open".  (Note, normal module management does not apply to the ModuleManager itself, i.e. it will always be present in the workbook and will not be re-imported, exported, or removed).
+1. __Import the ModuleManager module__ file into your workbook(s).  Within the VB Editor (VBE), in the Project Explorer view, right click anywhere under the name of your workbook and select "Import file...".  Select the ModuleManager.bas file that you just downloaded and click "Open".  (Note, normal module management does not apply to the ModuleManager itself, i.e. it will always be present in the workbook and will not be re-imported, exported, or removed).  
+  
+![Import ModuleManager module](screenshots/import_module_manager.png)
 
 2. __Add necessary references.__  Within the VBE, select "Tools > References".  In the dialog box, make sure that the following references are selected (if any references are already selected, then you should probably leave those too!):
  * Visual Basic For Applications
@@ -18,9 +20,17 @@ ModuleManager works with Excel 2007 and later (not tested in 2003 or earlier).
  * OLE Automation
  * Microsoft Office x.x Object Library
  * Microsoft Scripting Runtime
- * Microsoft Visual Basic for Applications Extensibility x.x
+ * Microsoft Visual Basic for Applications Extensibility x.x  
+  
+![Select Tools > References](screenshots/references_menu.png)  
+  
+![Select references to add from the dialog](screenshots/references_dialog.png)
 
-3. __Enable developer macro settings.__  In Excel, click "File > Options > Trust Center > Trust Center Settings...".  In the dialog box, select "Macro Settings", then check "Enable all macros" (or "Disable all macros except digitally signed macros" if you know what you're doing), __and__ "Trust access to the VBA project object model".
+3. __Enable developer macro settings.__  In Excel, click "File > Options > Trust Center > Trust Center Settings...".  In the dialog box, select "Macro Settings", then check "Enable all macros" (or "Disable all macros except digitally signed macros" if you know what you're doing), __and__ "Trust access to the VBA project object model".  
+  
+![Open Trust Center from File > Options](screenshots/macro_security_trust_center.png)  
+  
+![Enable macros from Trust Center's Macro Settings](screenshots/macro_security_trust_center_settings.png)
 
 4. __Paste the following code__ into the ThisWorkbook module of your workbook.  This is the code that actually handles the Workbook Open, Save, and Close events.  Without it, ModuleManager would just take up space!  The comments provide further instructions on customization of the ModuleManager.
 ```
