@@ -28,9 +28,9 @@ ModuleManager works with Excel 2007 and later (not tested in 2003 or earlier).  
 
 3. __Enable developer macro settings.__  In Excel, click "File > Options > Trust Center > Trust Center Settings...".  In the dialog box, select "Macro Settings", then check "Enable all macros" (or "Disable all macros except digitally signed macros" if you know what you're doing), __and__ "Trust access to the VBA project object model".  
   
-![Open Trust Center from File > Options](screenshots/macro_security_trust_center.png)  
+![Open Trust Center from File > Options](screenshots/macro_security_trust_center.PNG)  
   
-![Enable macros from Trust Center's Macro Settings](screenshots/macro_security_trust_center_settings.png)
+![Enable macros from Trust Center's Macro Settings](screenshots/macro_security_trust_center_settings.PNG)
 
 4. __Paste the following code__ into the "ThisWorkbook" module of your workbook.  This is the code that actually handles the Workbook Open, Save, and Close events.  Without it, ModuleManager would just take up space!  The comments provide further instructions on customization of the ModuleManager.
 ```
