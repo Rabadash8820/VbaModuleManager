@@ -5,7 +5,7 @@ The Module Manager handles automatic importing and exporting of Excel class, for
 * Storing code as text allows macros to be edited in the IDE of your choice, like Visual Studio or Notepad++.  All changes will be imported the next time you open the workbook!
 * Storing code as text (rather than inside a binary workbook file) allows change tracking with VCS software like Git or SVN.
 * Storing code in files separate from the main workbook eases collaboration on multiple macros within the same workbook, and allows for more logically distinct commits.
-* By removing modules when the workbook is closed, the Manager offers the above benefits *without* duplicating code between the text files and the workbook itself.
+* By removing modules when the workbook is closed, the Manager reduces the size of the workbook and prevents duplication of code between the text files and the workbook itself.
 
 ## Setup
 ModuleManager works with Excel 2007 and later (not tested in 2003 or earlier).  The following screenshots show the setup for Excel 2016 on a Windows 10 machine.
@@ -32,7 +32,7 @@ ModuleManager works with Excel 2007 and later (not tested in 2003 or earlier).  
   
 ![Enable macros from Trust Center's Macro Settings](screenshots/macro_security_trust_center_settings.png)
 
-4. __Paste the following code__ into the ThisWorkbook module of your workbook.  This is the code that actually handles the Workbook Open, Save, and Close events.  Without it, ModuleManager would just take up space!  The comments provide further instructions on customization of the ModuleManager.
+4. __Paste the following code__ into the "ThisWorkbook" module of your workbook.  This is the code that actually handles the Workbook Open, Save, and Close events.  Without it, ModuleManager would just take up space!  The comments provide further instructions on customization of the ModuleManager.
 ```
 Option Explicit
 
@@ -42,6 +42,7 @@ Private Sub Workbook_Open()
 	'The boolean argument specifies whether or not to show a Message Box on completion.
     Call ImportModules(ThisWorkbook.Path, True)
 End Sub
+
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, ByRef Cancel As Boolean)
 	'Use the correct path here to a directory where you want to export modules.
 	'You can add additional ExportMacros() statements to export to multiple locations.
@@ -49,6 +50,7 @@ Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, ByRef Cancel As Boole
 	'and you don't want to confuse the user by creating a bunch of mysterious code files!
     Call ExportModules(ThisWorkbook.Path)
 End Sub
+
 Private Sub Workbook_BeforeClose(ByRef Cancel As Boolean)
 	'Remove this statement if, for example, the workbook is in release mode,
 	'and you don't want to confuse the user by removing all the workbook's functionality!
