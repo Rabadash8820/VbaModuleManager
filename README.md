@@ -60,4 +60,4 @@ End Sub
 ```
 
 ## Support
-Issues and support questions may be posted on this repository's [Issues page](https://github.com/DanwareCreations/VbaModuleManager/issues) or mailed to [support@danwarecreations.com](mailto:support@danwarecreations.com).
+Issues and support questions may be posted on this repository's [Issues page](https://github.com/DanwareCreations/VbaModuleManager/issues).
