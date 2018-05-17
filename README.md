@@ -42,7 +42,7 @@ Private Sub Workbook_Open()
     'The boolean argument specifies whether or not to show a Message Box on completion.
     'Remove or comment out these statements when you are ready to provide this workbook to end users,
     'so that they don't get confused by message boxes about import errors.
-    Call ImportModules(ThisWorkbook.path, ShowMsgBox:=True)
+    Call ImportModules(ThisWorkbook.Name & ".modules", ShowMsgBox:=True)
 End Sub
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, ByRef Cancel As Boolean)
@@ -50,7 +50,7 @@ Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, ByRef Cancel As Boole
     'You can add additional ExportMacros() statements to export to multiple locations.
     'Remove or comment out these statements when you are ready to provide this workbook to end users,
     'so that they don't get confused by the appearance of a bunch of mysterious code files upon saving!
-    Call ExportModules(ThisWorkbook.path)
+    Call ExportModules(ThisWorkbook.Name & ".modules")
 End Sub
 
 Private Sub Workbook_BeforeClose(ByRef Cancel As Boolean)
