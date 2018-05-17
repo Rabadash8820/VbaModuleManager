@@ -36,26 +36,26 @@ ModuleManager works with Excel 2007 and later (not tested in 2003 or earlier).  
 4. __Paste the following code__ into the "ThisWorkbook" module of your workbook (visible in the Project Explorer).  This is the code that actually handles the Workbook Open, Save, and Close events.  Without it, ModuleManager would just take up space!  The comments provide further instructions on customization of the ModuleManager.
 
 ```vbnet
-Option Explicit
-
 Private Sub Workbook_Open()
     'Provide the path to a directory with VBA code files.  Paths may be relative or absolute.
     'You can add additional ImportMacros() statements to import from multiple locations.
     'The boolean argument specifies whether or not to show a Message Box on completion.
+    'Remove or comment out these statements when you are ready to provide this workbook to end users,
+    'so that they don't get confused by message boxes about import errors.
     Call ImportModules(ThisWorkbook.path, ShowMsgBox:=True)
 End Sub
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, ByRef Cancel As Boolean)
     'Provide the path to a directory where you want to export modules.  Paths may be relative or absolute.
     'You can add additional ExportMacros() statements to export to multiple locations.
-    'Remove this statement when you are ready to provide this workbook to end users,
+    'Remove or comment out these statements when you are ready to provide this workbook to end users,
     'so that they don't get confused by the appearance of a bunch of mysterious code files upon saving!
     Call ExportModules(ThisWorkbook.path)
 End Sub
 
 Private Sub Workbook_BeforeClose(ByRef Cancel As Boolean)
     'The boolean argument specifies whether or not to show a Message Box on completion.
-    'Remove this statement when you are ready to provide this workbook to end users,
+    'Remove or comment out this statement when you are ready to provide this workbook to end users,
     'so that modules are not removed, and functionality is not broken the next time the workbook is opened.
     Call RemoveModules(ShowMsgBox:=True)
 End Sub
