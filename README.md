@@ -35,7 +35,7 @@ ModuleManager works with Excel 2007 and later (not tested in 2003 or earlier). T
 
 4. __Paste the following code__ into the "ThisWorkbook" module of your workbook (visible in the Project Explorer).  This is the code that actually handles the Workbook Open, Save, and Close events.  Without it, ModuleManager would just take up space!  The comments provide further instructions on customization of the ModuleManager.
 
-**Make sure you remove or comment out these statements when you are ready to provide this workbook to end users.** Otherwise, they might get confused by message boxes about import/export errors. Macros should always be present in the workbook for your end users, as they should not be viewing/editing the macros anyway.
+**Make sure you remove or comment out these statements when you are ready to provide this workbook to end users.** Otherwise, they might get confused by message boxes about import/export errors and strange text files appearing in the same folder as the workbook. Macros should always be present in the workbook for your end users, as they should not be viewing/editing the macros anyway.
 
 ```vbnet
 Private Sub Workbook_Open()
