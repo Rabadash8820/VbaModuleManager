@@ -9,19 +9,22 @@ The Module Manager makes it much easier to work with complex VBA projects by han
 ## Setup
 ModuleManager works with Excel 2007 and later (not tested in 2003 or earlier). These instructions apply specifically to Excel (and I've only tested the Module Manager on Excel), but ModuleManger should work with all Microsoft Office VB Editors. The following screenshots show the setup for Excel 2016 on a Windows 10 machine.
 
-1. __Import the ModuleManager module__ file into your workbook(s). You can either copy-paste the [ModuleManager.bas](ModuleManager.bas) source code into a new Module within the VB Editor (VBE), or clone/download this repo and import the ModuleManager.bas file directly. Within the VBE, in the Project Explorer view, right click anywhere under the name of your workbook and select "Import file...".  Select the ModuleManager.bas file that you just downloaded and click "Open".
+1. __Import the ModuleManager module__ file into your workbook(s). You can either:
+  
+    1. Copy-paste the [ModuleManager.bas](ModuleManager.bas) source code into a new Module within the VB Editor (VBE). **Make sure that you also remove the `Attribute VB_NAME` line from the top of the file afterward!**
+    2. Clone/download this repo and import the `ModuleManager.bas` file directly. Within the VBE, in the Project Explorer view, right click anywhere under the name of your workbook and select "Import file...", as shown in the screenshot below. Select the ModuleManager.bas file that you just downloaded and click "Open".
 
-**Note, module management does not apply to the ModuleManager itself, so it will always be present in the workbook and will never be re-imported, exported, or removed.**
+    ![Import ModuleManager module](screenshots/import-module-manager.png)
 
-![Import ModuleManager module](screenshots/import-module-manager.png)
+    **Note, module management does not apply to the ModuleManager itself, so it will always be present in the workbook and will never be re-imported, exported, or removed.**
 
 2. __Add necessary references.__  Within the VBE, select "Tools > References".  In the dialog box, make sure that the following references are selected.  If any other references are already selected, then you should probably leave those too!
- * Visual Basic For Applications
- * Microsoft Excel x.x Object Library
- * OLE Automation
- * Microsoft Office x.x Object Library
- * Microsoft Scripting Runtime
- * Microsoft Visual Basic for Applications Extensibility x.x  
+ * `Visual Basic For Applications`
+ * `Microsoft Excel x.x Object Library`
+ * `OLE Automation`
+ * `Microsoft Office x.x Object Library`
+ * `Microsoft Scripting Runtime` (note that this and many other references may not be available in Excel for Mac)
+ * `Microsoft Visual Basic for Applications Extensibility x.x`
 
 ![Select Tools > References](screenshots/references-menu.png)  
 
