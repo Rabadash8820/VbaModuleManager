@@ -3,28 +3,31 @@ Option Explicit
 Option Private Module
 
 Private Const MY_NAME = "ModuleManager"
+Private Const ERR_SUPPORTED_APPS = MY_NAME & " currently only supports Microsoft Word and Excel."
+
+#Const MANAGING_WORD = 0
+#Const MANAGING_EXCEL = 0
 
 Dim allComponents As VBComponents
 Dim fileSys As New FileSystemObject
 Dim alreadySaved As Boolean
 
-Public Sub ImportModules(fromDirectory As String, Optional ShowMsgBox As Boolean = True)
+Public Sub ImportModules(FromDirectory As String, Optional ShowMsgBox As Boolean = True)
     'Cache some references
     'If the given directory does not exist then show an error dialog and exit
-    Set allComponents = ThisWorkbook.VBProject.VBComponents
-    Dim path As String: path = fromDirectory
-    If Not fileSys.FolderExists(path) Then
-        path = ThisWorkbook.path & "\" & path
-        If Not fileSys.FolderExists(path) Then
-            MsgBox "Could not locate import directory:  " & fromDirectory
+    Dim fromPath As String: fromPath = FromDirectory
+    If Not fileSys.FolderExists(fromPath) Then
+        fromPath = getFilePath() & "\" & fromPath
+        If Not fileSys.FolderExists(fromPath) Then
+            MsgBox "Could not locate import directory:  " & FromDirectory
             Exit Sub
         End If
     End If
-    Dim dir As Folder: Set dir = fileSys.GetFolder(path)
+    Dim dir As Folder: Set dir = fileSys.GetFolder(fromPath)
                 
     'Import all VB code files from the given directory if any)
     Dim f As File
-    Dim imports As New Dictionary
+    Dim imports As New Scripting.Dictionary 'Must be qualified to distinguish it from an MS Word Dictionary
     Dim numFiles As Integer: numFiles = 0
     For Each f In dir.Files
         Dim dotIndex As String: dotIndex = InStrRev(f.Name, ".")
@@ -48,20 +51,20 @@ Public Sub ImportModules(fromDirectory As String, Optional ShowMsgBox As Boolean
         Dim result As VbMsgBoxResult: result = MsgBox(msg, vbOKOnly)
     End If
 End Sub
-Public Sub ExportModules(toDirectory As String)
+Public Sub ExportModules(ToDirectory As String)
     'Cache some references
     'If the given directory does not exist then show an error dialog and exit
-    Set allComponents = ThisWorkbook.VBProject.VBComponents
-    Dim path As String: path = toDirectory
-    If Not fileSys.FolderExists(path) Then
-        path = ThisWorkbook.path & "\" & path
-        If Not fileSys.FolderExists(path) Then _
-            fileSys.CreateFolder (path)
+    Dim toPath As String: toPath = ToDirectory
+    If Not fileSys.FolderExists(toPath) Then
+        toPath = getFilePath() & "\" & toPath
+        If Not fileSys.FolderExists(toPath) Then _
+            fileSys.CreateFolder (toPath)
     End If
-    Dim dir As Folder: Set dir = fileSys.GetFolder(path)
+    Dim dir As Folder: Set dir = fileSys.GetFolder(toPath)
     
     'Export all modules from this file (except default MS Office modules)
     Dim vbc As VBComponent
+    Dim allComponents As VBComponents: Set allComponents = getAllComponents()
     For Each vbc In allComponents
         Dim correctType As Boolean: correctType = (vbc.Type = vbext_ct_StdModule Or vbc.Type = vbext_ct_ClassModule Or vbc.Type = vbext_ct_MSForm)
         If correctType And vbc.Name <> MY_NAME Then _
@@ -74,14 +77,12 @@ Public Sub RemoveModules(Optional ShowMsgBox As Boolean = True)
         alreadySaved = False
         Exit Sub
     End If
-        
-    'Cache some references
-    Set allComponents = ThisWorkbook.VBProject.VBComponents
-                        
+
     'Remove all modules from this file (except default MS Office modules obviously)
     Dim removals As New Collection
     Dim vbc As VBComponent
     Dim numModules As Integer: numModules = 0
+    Dim allComponents As VBComponents: Set allComponents = getAllComponents()
     For Each vbc In allComponents
         Dim correctType As Boolean: correctType = (vbc.Type = vbext_ct_StdModule Or vbc.Type = vbext_ct_ClassModule Or vbc.Type = vbext_ct_MSForm)
         If correctType And vbc.Name <> MY_NAME Then
@@ -94,7 +95,7 @@ Public Sub RemoveModules(Optional ShowMsgBox As Boolean = True)
     'Set the saved flag to prevent a save event loop
     'Save file again now that all modules have been removed
     alreadySaved = True
-    ThisWorkbook.Save
+    Call saveFile
         
     'Show a success message box
     If ShowMsgBox Then
@@ -110,10 +111,45 @@ Public Sub RemoveModules(Optional ShowMsgBox As Boolean = True)
     End If
 End Sub
 
+Private Function getFilePath() As String
+    #If MANAGING_WORD Then
+        getFilePath = ThisDocument.path
+    #ElseIf MANAGING_EXCEL Then
+        getFilePath = ThisWorkbook.path
+    #Else
+        Call raiseUnsupportedAppError
+    #End If
+End Function
+
+Private Function getAllComponents() As VBComponents
+    #If MANAGING_WORD Then
+        Set getAllComponents = ThisDocument.VBProject.VBComponents
+    #ElseIf MANAGING_EXCEL Then
+        Set getAllComponents = ThisWorkbook.VBProject.VBComponents
+    #Else
+        Call raiseUnsupportedAppError
+    #End If
+End Function
+
+Private Sub saveFile()
+    #If MANAGING_WORD Then
+        ThisDocument.save
+    #ElseIf MANAGING_EXCEL Then
+        ThisWorkbook.save
+    #Else
+        Call raiseUnsupportedAppError
+    #End If
+End Sub
+
+Private Sub raiseUnsupportedAppError()
+    Err.Raise Number:=vbObjectError + 1, Description:=ERR_SUPPORTED_APPS
+End Sub
+
 Private Function doImport(ByRef codeFile As File) As Boolean
     'Determine whether a module with this name already exists
     Dim Name As String: Name = Left(codeFile.Name, Len(codeFile.Name) - 4)
     On Error Resume Next
+    Dim allComponents As VBComponents: Set allComponents = getAllComponents()
     Dim m As VBComponent: Set m = allComponents.item(Name)
     If Err.Number <> 0 Then _
         Set m = Nothing
@@ -128,6 +164,7 @@ Private Function doImport(ByRef codeFile As File) As Boolean
     allComponents.Import (codeFile.path)
     doImport = alreadyExists
 End Function
+
 Private Function doExport(ByRef module As VBComponent, dirPath As String) As Boolean
     'Determine whether a file with this component's name already exists
     Dim ext As String

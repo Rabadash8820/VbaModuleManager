@@ -7,40 +7,74 @@ The Module Manager makes it much easier to work with complex VBA projects by han
 * By removing modules when the workbook is closed, the Module Manager prevents duplication of code between the text files and the workbook itself, and reduces the size of the workbook while it is sitting around on your hard drive. This is especially powerful in combination with Git [Large File Storage (LFS)](https://git-lfs.github.com/).
 
 ## Setup
-ModuleManager works with Excel 2007 and later (not tested in 2003 or earlier). These instructions apply specifically to Excel (and I've only tested the Module Manager on Excel), but ModuleManger should work with all Microsoft Office VB Editors. The following screenshots show the setup for Excel 2016 on a Windows 10 machine.
+ModuleManager works with Office 2007 and later (not tested in 2003 or earlier). I only "officially" support the Word and Excel VB Editors, but the other Office applications should be easy enough to set up with some minor code tweaks. The following screenshots show the setup for Office 2016 on a Windows 10 machine.
 
-1. __Import the ModuleManager module__ file into your workbook(s). You can either:
+1. __Import the ModuleManager module__ file into your file (Excel workbook, Word document, etc.). You can either:
   
     1. Copy-paste the [ModuleManager.bas](ModuleManager.bas) source code into a new Module within the VB Editor (VBE). **Make sure that you also remove the `Attribute VB_NAME` line from the top of the file afterward!**
-    2. Clone/download this repo and import the `ModuleManager.bas` file directly. Within the VBE, in the Project Explorer view, right click anywhere under the name of your workbook and select "Import file...", as shown in the screenshot below. Select the ModuleManager.bas file that you just downloaded and click "Open".
+    2. Clone/download this repo and import the `ModuleManager.bas` file directly. Within the VBE, in the Project Explorer view, right click anywhere under the name of your project and select "Import file...", as shown in the screenshot below. Select the `ModuleManager.bas` file that you just downloaded and click "Open".
 
     ![Import ModuleManager module](screenshots/import-module-manager.png)
 
-    **Note, module management does not apply to the ModuleManager itself, so it will always be present in the workbook and will never be re-imported, exported, or removed.**
+    **Note, module management does not apply to the ModuleManager itself, so it will always be present in your file and will never be re-imported, exported, or removed.**
 
 2. __Add necessary references.__  Within the VBE, select "Tools > References".  In the dialog box, make sure that the following references are selected.  If any other references are already selected, then you should probably leave those too!
  * `Visual Basic For Applications`
- * `Microsoft Excel x.x Object Library`
+ * `Microsoft <application> x.x Object Library` (e.g. `Microsoft Word 16.0 Object Library`)
  * `OLE Automation`
  * `Microsoft Office x.x Object Library`
- * `Microsoft Scripting Runtime` (note that this and many other references may not be available in Excel for Mac)
+ * `Microsoft Scripting Runtime` (note that this and many other references may not be available in Office for Mac)
  * `Microsoft Visual Basic for Applications Extensibility x.x`
 
 ![Select Tools > References](screenshots/references-menu.png)  
 
 ![Select references to add from the dialog](screenshots/references-dialog.png)
 
-3. __Enable developer macro settings.__  In Excel, click "File > Options > Trust Center > Trust Center Settings...".  In the dialog box, select "Macro Settings", then check "Enable all macros" (or "Disable all macros except digitally signed macros" if you know what you're doing), __and__ "Trust access to the VBA project object model".  
+3. __Enable developer macro settings.__  On Windows, click "File > Options > Trust Center > Trust Center Settings...".  In the dialog box, select "Macro Settings", then check "Enable all macros" (or "Disable all macros except digitally signed macros" if you know what you're doing), __and__ "Trust access to the VBA project object model".  
 
 ![Open Trust Center from File > Options](screenshots/macro-security-trust-center.png)  
 
 ![Enable macros from Trust Center's Macro Settings](screenshots/macro-security-trust-center-settings.png)
 
-4. __Paste the following code__ into the "ThisWorkbook" module of your workbook (visible in the Project Explorer).  This is the code that actually handles the Workbook Open, Save, and Close events.  Without it, ModuleManager would just take up space!  The comments provide further instructions on customization of the ModuleManager.
+4. __Modify the compiler constant__ for your application in the `ModuleManager` module. Open that module from the Project Explorer, find the `#Const` line for your Office application, then change the `0` to a `1`. For example, if you are using Excel, then change `#Const MANAGING_EXCEL = 0` to `#Const MANAGING_EXCEL = 1`.
 
-**Make sure you remove or comment out these statements when you are ready to provide this workbook to end users.** Otherwise, they might get confused by message boxes about import/export errors and strange text files appearing in the same folder as the workbook. Macros should always be present in the workbook for your end users, as they should not be viewing/editing the macros anyway.
+5. __Paste the following code__ for your application into the "This" module of your project (e.g., `ThisDocument` in Word or `ThisWorkbook` in Excel, visible in the Project Explorer). This module will contain the code that actually handles the file Open, Save, and Close events; without it, ModuleManager would just take up space! The comments below provide further instructions for customizing the ModuleManager.
+
+    **Make sure you remove or comment out these statements when you are ready to provide your file to end users.** Otherwise, they might get confused by message boxes about import/export errors and strange text files appearing in the file's directory. Macros should always be present in the file for your end users, as they probably should not be viewing/editing your macros anyway.
+
+### Word
 
 ```vbnet
+Option Explicit
+
+Private Sub Document_Open()
+    'Provide the Path to a directory with VBA code files. Paths may be relative or absolute.
+    'You can add additional ImportModules() statements to import from multiple locations.
+    'The boolean argument specifies whether or not to show a Message Box on completion.
+    'Remove or comment out these statements when you are ready to provide this document to end users,
+    'so that they don't get confused by message boxes about import errors.
+    Call ImportModules(ThisDocument.Name & ".modules", ShowMsgBox:=True)
+End Sub
+
+Private Sub Document_Close()
+    'Provide the Path to a directory where you want to export modules. Paths may be relative or absolute.
+    'You can add additional ExportModules() statements to export to multiple locations.
+    'Remove or comment out these statements when you are ready to provide this document to end users,
+    'so that they don't get confused by the appearance of a bunch of mysterious code files upon saving!
+    Call ExportModules(ThisDocument.Name & ".modules")
+    
+    'The boolean argument specifies whether or not to show a Message Box on completion.
+    'Remove or comment out this statement when you are ready to provide this document to end users,
+    'so that modules are not removed, and functionality is not broken the next time the document is opened.
+    Call RemoveModules(ShowMsgBox:=True)
+End Sub
+```
+
+### Excel
+
+```vbnet
+Option Explicit
+
 Private Sub Workbook_Open()
     'Provide the path to a directory with VBA code files. Paths may be relative or absolute.
     'You can add additional ImportModules() statements to import from multiple locations.
