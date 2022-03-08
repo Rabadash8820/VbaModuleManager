@@ -2,11 +2,11 @@ Attribute VB_Name = "ModuleManager"
 Option Explicit
 Option Private Module
 
-Private Const MY_NAME = "ModuleManager"
-Private Const ERR_SUPPORTED_APPS = MY_NAME & " currently only supports Microsoft Word and Excel."
-
 #Const MANAGING_WORD = 0
 #Const MANAGING_EXCEL = 0
+
+Private Const MY_NAME = "ModuleManager"
+Private Const ERR_SUPPORTED_APPS = MY_NAME & " currently only supports Microsoft Word and Excel."
 
 Dim allComponents As VBComponents
 Dim fileSys As New FileSystemObject
