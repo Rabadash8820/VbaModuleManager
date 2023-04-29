@@ -2,9 +2,9 @@
 
 ## Why?
 
-The Module Manager makes it much easier to work with complex VBA projects by handling the automatic importing and exporting of VBA Modules, Class Modules, and UserForms.  The Module Manager imports modules (\*.bas, \*.frm, \*.frx, and \*.cls files) from specified directories when the workbook is opened, re-exports them to specified directories when the workbook is saved, and removes them when the workbook is closed. This provides the following benefits:
+The Module Manager makes it much easier to host complex VBA projects in version control by handling the automatic import from and export to text of VBA Modules, Class Modules, and UserForms.  The Module Manager imports modules (\*.bas, \*.frm, \*.frx, and \*.cls files) from specified directories when the workbook is opened, re-exports them to specified directories when the workbook is saved, and removes them from the workbook when the workbook is closed. This provides the following benefits:
 
-* Code is stored as text, allowing macros to be edited in the IDE of your choice, like Visual Studio or Notepad++. All changes will be imported to the VB Editor (VBE) the next time you open the workbook!
+* Code is stored as text, allowing macros to be edited in the IDE of your choice, like Visual Studio, VS Code, Notepad++, etc. All changes will be imported to the VB Editor (VBE) the next time you open the workbook!
 * Storing code as text (rather than inside a binary workbook file) also facilitates change tracking with version control software like Git or SVN.
 * Storing code in files separate from the main workbook eases collaboration on multiple macros within the same workbook, and allows for more atomic commits.
 * By removing modules when the workbook is closed, the Module Manager prevents duplication of code between the text files and the workbook itself, and reduces the size of the workbook while it is sitting around on your hard drive. This is especially powerful in combination with Git [Large File Storage (LFS)](https://git-lfs.github.com/).
